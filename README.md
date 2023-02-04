@@ -1,2 +1,2 @@
-# bs-to-code-2
+# bs-to-code
 Created with CodeSandbox

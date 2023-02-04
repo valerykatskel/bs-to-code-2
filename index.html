@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>№2 Трансформатор кода блок-схемы в код C#</title>
+  </head>
+  <body>
+    <div id="app">
+      <div class="app-code">
+        <textarea name="bs-code" id="bsCode" cols="90" rows="10"></textarea>
+        <textarea
+          disabled
+          name="bs-code-formated"
+          id="bsCodeFormatted"
+          cols="90"
+          rows="10"
+        ></textarea>
+      </div>
+      <div class="app-errors">
+        <div class="errorBracketsCount">
+          Количество открывающихся скобок не совпадает с количеством
+          закрывающихся
+        </div>
+
+        <div class="errorLogicSignsCount1">
+          В условии найдены подряд идущие '&& &&'
+        </div>
+        <div class="errorLogicSignsCount2">
+          В условии найдены подряд идущие '|| ||'
+        </div>
+        <div class="errorLogicSignsCount3">
+          В условии найдены подряд идущие '&& ||'
+        </div>
+        <div class="errorLogicSignsCount4">
+          В условии найдены подряд идущие '|| &&'
+        </div>
+        <div class="errorBarIndex">
+          Пропущен индекс бара, на котором нужно смотреть значение переменной
+        </div>
+      </div>
+    </div>
+    <script src="./src/index.js"></script>
+  </body>
+</html>

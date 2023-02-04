@@ -1,0 +1,36 @@
+#app {
+  display: flex;
+  flex-direction: column;
+}
+.app-code {
+  display: flex;
+  flex-direction: column;
+}
+
+.errorBracketsCount #bsCode,
+.errorLogicSignsCount1 #bsCode,
+.errorLogicSignsCount2 #bsCode,
+.errorLogicSignsCount3 #bsCode,
+.errorLogicSignsCount4 #bsCode,
+.errorBarIndex #bsCode {
+  background: red;
+  color: white;
+  display: block;
+}
+.app-errors .errorBracketsCount,
+.app-errors .errorLogicSignsCount1,
+.app-errors .errorLogicSignsCount2,
+.app-errors .errorLogicSignsCount3,
+.app-errors .errorLogicSignsCount4,
+.app-errors .errorBarIndex {
+  display: none;
+  color: red;
+}
+.errorBracketsCount ~ .app-errors .errorBracketsCount,
+.errorLogicSignsCount1 ~ .app-errors .errorLogicSignsCount1,
+.errorLogicSignsCount2 ~ .app-errors .errorLogicSignsCount2,
+.errorLogicSignsCount3 ~ .app-errors .errorLogicSignsCount3,
+.errorLogicSignsCount4 ~ .app-errors .errorLogicSignsCount4,
+.errorBarIndex ~ .app-errors .errorBarIndex {
+  display: block;
+}
