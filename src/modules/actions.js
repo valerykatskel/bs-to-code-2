@@ -7,6 +7,10 @@ let loopMode = false;
 
 const transformCode = (code) => {
   parseString(code, (err, result) => {
+    debugger;
+
+    //  подготовым данные по всем схемам
+
     result.mxfile.diagram.forEach((diagram) => {
       let conditions = {}; // коллекция всех ромбов-условий
       let conditionsArray = []; // массив всех ромбов-условий
@@ -43,12 +47,12 @@ const transformCode = (code) => {
         ) {
           loopMode = true;
           // а раз мы работаем со схемой циклом - то тут сразу все можно выдать, дальше незачем искать блоки других типов
-
           if (native["b-loop-init"]) {
             loop.init = stripHtml(native.label);
           }
           if (native["b-loop-body"]) {
             loop.body = createCondition(stripHtml(native.label)).trim();
+            loop.name = stripHtml(native["b-loop-body"]);
           }
           if (native["b-loop-step"]) {
             loop.step = stripHtml(native.label);
@@ -56,6 +60,7 @@ const transformCode = (code) => {
           if (native["b-loop-condition"]) {
             loop.condition = stripHtml(native.label);
           }
+          debugger;
         } else {
           // парсим блоки-действия
           if (native["b-action"]) {
@@ -254,38 +259,30 @@ ${conditionsArray.map((el) => el.code).join("\n")}
 \t\t\t}
       `;
       } else {
-        debugger;
-        const loopBodyId = scheme
-          .map((el) => el.$)
-          .filter((el) => el["b-loop-body"])[0].id;
-        // получим все ДА и НЕТ
-        returns = scheme
-          .map((el) =>
-            el.$["b-return"]
-              ? { id: el.$.id, type: el.$["b-return"] }
-              : undefined
-          )
-          .filter((el) => el);
         // получим тип цикла
-        const loopType = scheme
-          .map((el) =>
-            el.$["b-loop-break"] ? el.$["b-loop-break"].value : undefined
-          )
-          .filter((el) => el);
+        const loopType = !!scheme
+          .map((el) => (el.$["b-loop-exit"] ? el : undefined))
+          .filter((el) => el)[0].$["b-loop-exit"];
 
         // дальше нужно определить тип цикла
         // usual - если условие на всех итерациях выполняется, возвращаем ДА, если на любой не выполнится, то вернем НЕТ
         // inverted - если условие на всех итерациях НЕ выполняется, возвращаем ДА, если на любой нвыполнится, то вернем ДА
+        debugger;
+
         codeFormatted.value += `
-\t\t\tpublic bool ${diagramType} {
+\t\t\tpublic bool ${diagramName} (${diagramArgs ? diagramArgs : ""}) {
 \t\t\t\tdebugPath = "";
-for (${loop.init}; ${loop.condition}; ${loop.step}) {
-  if (${!loopType ? "!" : ""}${loop.body}) {
-      return ${!loopType ? "false" : "true"};
-  }
-}
-debugPath += "b62.2 completed"
-return ${!loopType ? "true" : "false"};
+\t\t\t\tfor (${loop.init}; ${loop.condition}; ${loop.step}) {
+\t\t\t\t\tif (
+${loopType ? "\t\t\t\t\t\t!(" : ""}  
+\t\t\t\t\t\t${loopType ? "\t" : ""}${loop.body}
+${loopType ? "\t\t\t\t\t\t)" : ""}
+\t\t\t\t\t) {
+\t\t\t\t\t\treturn ${loopType ? "false" : "true"};
+\t\t\t\t\t}
+\t\t\t\t}
+\t\t\t\tdebugPath += "${loop.name} completed";
+\t\t\t\treturn ${loopType ? "true" : "false"};
 \t\t\t}
       `;
       }
