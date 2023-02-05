@@ -1,5 +1,6 @@
 import { getTabs, stripHtml, getConditionCode, getExits } from "./helpers";
 import { codeFormatted, appCode } from "./elements";
+//import { getPages } from "../controllers/mxfile.js";
 const copy = require("clipboard-copy");
 const parseString = require("xml2js").parseString;
 let bracketsCountError = false;
@@ -7,9 +8,9 @@ let loopMode = false;
 
 const transformCode = (code) => {
   parseString(code, (err, result) => {
-    debugger;
-
     //  подготовым данные по всем схемам
+    //const tabs = getPages(result);
+    //debugger;
 
     result.mxfile.diagram.forEach((diagram) => {
       let conditions = {}; // коллекция всех ромбов-условий
@@ -107,7 +108,7 @@ const transformCode = (code) => {
       debugger;
       if (!loopMode) {
         // получаем все стрелки выхода из условий в отдельный массив и одновременно пушим стрелки в нужное условие
-        exits = getExits(result, conditions, returns, actions, loops);
+        exits = getExits(result, conditions, returns, actions);
 
         console.group("conditions");
         console.log(conditions);
@@ -260,9 +261,10 @@ ${conditionsArray.map((el) => el.code).join("\n")}
       `;
       } else {
         // получим тип цикла
-        const loopType = !!scheme
-          .map((el) => (el.$["b-loop-exit"] ? el : undefined))
-          .filter((el) => el)[0].$["b-loop-exit"];
+        const loopType =
+          scheme
+            .map((el) => (el.$["b-loop-exit"] ? el.$ : undefined))
+            .filter((el) => el)[0]["b-loop-exit"] === "true";
 
         // дальше нужно определить тип цикла
         // usual - если условие на всех итерациях выполняется, возвращаем ДА, если на любой не выполнится, то вернем НЕТ
@@ -270,20 +272,24 @@ ${conditionsArray.map((el) => el.code).join("\n")}
         debugger;
 
         codeFormatted.value += `
-\t\t\tpublic bool ${diagramName} (${diagramArgs ? diagramArgs : ""}) {
-\t\t\t\tdebugPath = "";
-\t\t\t\tfor (${loop.init}; ${loop.condition}; ${loop.step}) {
-\t\t\t\t\tif (
-${loopType ? "\t\t\t\t\t\t!(" : ""}  
-\t\t\t\t\t\t${loopType ? "\t" : ""}${loop.body}
-${loopType ? "\t\t\t\t\t\t)" : ""}
-\t\t\t\t\t) {
-\t\t\t\t\t\treturn ${loopType ? "false" : "true"};
+\t\t\t\tpublic bool ${diagramName} (${diagramArgs ? diagramArgs : ""}) {
+\t\t\t\t\tdebugPath = "";
+\t\t\t\t\t
+\t\t\t\t\tfor (${loop.init}; ${loop.condition}; ${loop.step}) {
+\t\t\t\t\t\tif (${!loopType ? "\n\t\t\t\t\t\t\t!(" : ""}  
+\t\t\t\t\t\t\t${!loopType ? "\t" : ""}${loop.body}${
+          !loopType ? "\n\t\t\t\t\t\t\t)" : ""
+        }
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${loop.name} ${loopType ? " T" : " F"} >";  
+\t\t\t\t\t\t\t
+\t\t\t\t\t\t\treturn ${loopType ? "true" : "false"};
+\t\t\t\t\t\t}
 \t\t\t\t\t}
+\t\t\t\t\tdebugPath += "${loop.name} ${loopType ? " F" : " T"} >";
+\t\t\t\t\t
+\t\t\t\t\treturn ${loopType ? "false" : "true"};
 \t\t\t\t}
-\t\t\t\tdebugPath += "${loop.name} completed";
-\t\t\t\treturn ${loopType ? "true" : "false"};
-\t\t\t}
       `;
       }
     });

@@ -321,7 +321,7 @@ ${conditionLast.text
   }
 };
 
-const getExits = (result, conditions, returns, actions, loops) =>
+const getExits = (result, conditions, returns, actions) =>
   result.mxfile.diagram[0].mxGraphModel[0].root[0].object
     .map((el) => {
       let resObj = {};
@@ -357,10 +357,6 @@ const getExits = (result, conditions, returns, actions, loops) =>
                 actions[resObj.to].name;
               conditions[resObj.from]["exit-false"].type =
                 actions[resObj.to].type;
-            } else if (loops[resObj.from]) {
-              loops[resObj.from]["exit"].id = actions[resObj.to].id;
-              loops[resObj.from]["exit"].name = actions[resObj.to].name;
-              loops[resObj.from]["exit"].type = actions[resObj.to].type;
             }
           }
         }
@@ -390,29 +386,6 @@ const getExits = (result, conditions, returns, actions, loops) =>
             actions[resObj.from]["exit-none"].id = returns[resObj.to].id;
             actions[resObj.from]["exit-none"].name = returns[resObj.to].name;
             actions[resObj.from]["exit-none"].type = returns[resObj.to].type;
-          }
-        }
-
-        // добавим найденную стрелку перехода из цикла в следующий блок-действие или условие
-        if (resObj.value === "next") {
-          debugger;
-          //let loopName = el
-          if (returns[resObj.to]) {
-            // если переходим дальше в общий ДА или НЕТ
-            loops[resObj.from]["next"].id = returns[resObj.to].id;
-            loops[resObj.from]["next"].name = returns[resObj.to].name;
-            loops[resObj.from]["next"].type = returns[resObj.to].type;
-          } else if (actions[resObj.to]) {
-            // если переходим дальше в блок-действие
-
-            loops[resObj.from]["next"].id = actions[resObj.to].id;
-            loops[resObj.from]["next"].name = actions[resObj.to].name;
-            loops[resObj.from]["next"].type = actions[resObj.to].type;
-          } else if (conditions[resObj.to]) {
-            // если переходим дальше в блок-условие
-            loops[resObj.from]["next"].id = conditions[resObj.to].id;
-            loops[resObj.from]["next"].name = conditions[resObj.to].name;
-            loops[resObj.from]["next"].type = conditions[resObj.to].type;
           }
         }
       } else resObj.type = "";
