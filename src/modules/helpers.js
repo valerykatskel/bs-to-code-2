@@ -19,305 +19,324 @@ const getConditionCode = ({
 
   if (type === "last")
     return `
-\t\t\t\t#region ${condition.name} ${diagramType} /*last*/
-\t\t\t\t\tif (
+\t\t\t\t\t#region ${condition.name} ${diagramType} /*last*/
+\t\t\t\t\t\tif (
 ${condition.text
   .split("\n")
-  .map((line) => `\t\t\t\t\t\t${line}\n`)
-  .join("")}  
-\t\t\t\t\t) {
-\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+  .map((line) => `\n\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)}  
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
 
-\t\t\t\t\t\treturn ${condition["exit-true"].name};
-\t\t\t\t\t} else {
-\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
+\t\t\t\t\t\t\treturn ${condition["exit-true"].name};
+\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
       
-\t\t\t\t\t\treturn ${condition["exit-false"].name};
-\t\t\t\t\t}
-\t\t\t\t#endregion`;
+\t\t\t\t\t\t\treturn ${condition["exit-false"].name};
+\t\t\t\t\t\t}
+\t\t\t\t\t#endregion`;
 
   if (type === "last-inverted")
     return `
-\t\t\t\t#region ${condition.name} ${diagramType} /*last-inverted*/
-\t\t\t\t\tif (
+\t\t\t\t\t#region ${condition.name} ${diagramType} /*last-inverted*/
+\t\t\t\t\t\tif (
 ${condition.text
   .split("\n")
-  .map((line) => `\t\t\t\t\t\t${line}\n`)
-  .join("")} 
-\t\t\t\t\t) {
-\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
+  .map((line) => `\n\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)} 
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
 
-\t\t\t\t\t\treturn ${condition["exit-false"].name};
-\t\t\t\t\t} else {
-\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+\t\t\t\t\t\t\treturn ${condition["exit-true"].name};
+\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
       
-\t\t\t\t\t\treturn ${condition["exit-true"].name};
-\t\t\t\t\t}
-\t\t\t\t#endregion`;
+\t\t\t\t\t\t\treturn ${condition["exit-false"].name};
+\t\t\t\t\t\t}
+\t\t\t\t\t#endregion`;
 
   if (type === "exit-false")
     return `
-\t\t\t\t#region ${condition.name} ${diagramType} /*exit-false*/
-\t\t\t\t\tif (
-\t\t\t\t\t\t!(
+\t\t\t\t\t#region ${condition.name} ${diagramType} /*exit-false*/
+\t\t\t\t\t\tif (
+\t\t\t\t\t\t\t!(
 ${condition.text
   .split("\n")
-  .map((line) => `\t\t\t\t\t\t\t${line}\n`)
-  .join("")}
-\t\t\t\t\t\t)   
-\t\t\t\t\t) {
-\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
+  .map((line) => `\n\t\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)}
+\t\t\t\t\t\t\t)   
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
 
-\t\t\t\t\t\treturn ${condition["exit-false"].name};
-\t\t\t\t\t} else {
-\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
-\t\t\t\t\t}
-\t\t\t\t#endregion`;
+\t\t\t\t\t\t\treturn ${condition["exit-false"].name};
+\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+\t\t\t\t\t\t}
+\t\t\t\t\t#endregion`;
 
   if (type === "exit-true")
     return `
-\t\t\t\t#region ${condition.name} ${diagramType} /*exit-true*/
-\t\t\t\t\tif (
+\t\t\t\t\t#region ${condition.name} ${diagramType} /*exit-true*/
+\t\t\t\t\t\tif (
 ${condition.text
   .split("\n")
-  .map((line) => `\t\t\t\t\t\t${line}\n`)
-  .join("")} 
-\t\t\t\t\t) {
-\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+  .map((line) => `\n\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)} 
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
 
-\t\t\t\t\t\treturn ${condition["exit-true"].name};
-\t\t\t\t\t} else {
-\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
-\t\t\t\t\t}
-\t\t\t\t#endregion`;
+\t\t\t\t\t\t\treturn ${condition["exit-true"].name};
+\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
+\t\t\t\t\t\t}
+\t\t\t\t\t#endregion`;
 
   if (type === "both-to-next")
     return `
-\t\t\t\t#region ${condition.name} ${diagramType} /*both-to-next*/
-\t\t\t\t\tif (
+\t\t\t\t\t#region ${condition.name} ${diagramType} /*both-to-next*/
+\t\t\t\t\t\tif (
 ${condition.text
   .split("\n")
-  .map((line) => `\t\t\t\t\t\t${line}\n`)
-  .join("")} 
-\t\t\t\t\t) {
-\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+  .map((line) => `\n\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)} 
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
 
-\t\t\t\t\t\t[PASTE_HERE_CODE_FOR_${condition["exit-true"].name}];
-\t\t\t\t\t} else {
-\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
+\t\t\t\t\t\t\t[PASTE_HERE_CODE_FOR_${condition["exit-true"].name}];
+\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
 
-\t\t\t\t\t\t[PASTE_HERE_CODE_FOR_${condition["exit-false"].name}];
-\t\t\t\t\t}
-\t\t\t\t#endregion`;
+\t\t\t\t\t\t\t[PASTE_HERE_CODE_FOR_${condition["exit-false"].name}];
+\t\t\t\t\t\t}
+\t\t\t\t\t#endregion`;
 
   if (type === "exit-false-and-action") {
     let action = actions[condition["exit-true"].id];
     return `
-\t\t\t\t#region ${condition.name} ${diagramType} /*exit-false-and-action*/
-\t\t\t\t\tif (
-\t\t\t\t\t\t!(
+\t\t\t\t\t#region ${condition.name} ${diagramType} /*exit-false-and-action*/
+\t\t\t\t\t\tif (
+\t\t\t\t\t\t\t!(
 ${condition.text
   .split("\n")
-  .map((line) => `\t\t\t\t\t\t\t${line}\n`)
-  .join("")} 
-\t\t\t\t\t\t)   
-\t\t\t\t\t) {
-\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
+  .map((line) => `\n\t\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)} 
+\t\t\t\t\t\t\t)   
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
 
-\t\t\t\t\t\treturn ${condition["exit-false"].name};
-\t\t\t\t\t} else {
-\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+\t\t\t\t\t\t\treturn ${condition["exit-false"].name};
+\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
 
-\t\t\t\t\t\t#region ${action.name} ${diagramType}
+\t\t\t\t\t\t\t#region ${action.name} ${diagramType}
 ${action.value
   .split(";")
-  .map((line) => (line !== "" ? `\t\t\t\t\t\t\t${line};\n` : ""))
-  .join("")}  
-\t\t\t\t\t\t\tdebugPath += "${action.name} compleated > ";
-\t\t\t\t\t\t#endregion
+  .map((line) => (line !== "" ? `\n\t\t\t\t\t\t\t\t${line};` : ""))
+  .join("")
+  .substr(1)}  
+\t\t\t\t\t\t\t\tdebugPath += "${action.name} compleated > ";
+\t\t\t\t\t\t\t#endregion
 
-\t\t\t\t\t\t${
+\t\t\t\t\t\t\t${
       actions[condition["exit-true"].id]["exit-none"].name === "true"
         ? `return true;`
         : actions[condition["exit-true"].id]["exit-none"].name === "false"
         ? `return false;`
         : ``
     }
-\t\t\t\t\t}
-\t\t\t\t#endregion`;
+\t\t\t\t\t\t}
+\t\t\t\t\t#endregion`;
   }
 
   if (type === "exit-true-and-action") {
     let conditionAction = actions[condition["exit-false"].id];
     return `
-\t\t\t\t#region ${condition.name} ${diagramType} /*exit-true-and-action*/
-\t\t\t\t\tif (
+\t\t\t\t\t#region ${condition.name} ${diagramType} /*exit-true-and-action*/
+\t\t\t\t\t\tif (
 ${condition.text
   .split("\n")
-  .map((line) => `\t\t\t\t\t\t${line}\n`)
-  .join("")}    
-\t\t\t\t\t) {
-\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+  .map((line) => `\n\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)}    
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
 
-\t\t\t\t\t\treturn ${condition["exit-true"].name};
-\t\t\t\t\t} else {
-\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
+\t\t\t\t\t\t\treturn ${condition["exit-true"].name};
+\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
 
-\t\t\t\t\t\t#region ${conditionAction.name} ${diagramType}
+\t\t\t\t\t\t\t#region ${conditionAction.name} ${diagramType}
 ${conditionAction.value
   .split(";")
-  .map((line) => (line !== "" ? `\t\t\t\t\t\t\t${line};\n` : ""))
-  .join("")}  
-\t\t\t\t\t\t\tdebugPath += "${conditionAction.name} compleated > ";
-\t\t\t\t\t\t#endregion
-\t\t\t\t\t}
-\t\t\t\t#endregion`;
+  .map((line) => (line !== "" ? `\n\t\t\t\t\t\t\t\t${line};` : ""))
+  .join("")
+  .substr(1)}  
+\t\t\t\t\t\t\t\tdebugPath += "${conditionAction.name} compleated > ";
+\t\t\t\t\t\t\t#endregion
+\t\t\t\t\t\t}
+\t\t\t\t\t#endregion`;
   }
 
   if (type === "exit-to-action") {
     let conditionAction = actions[condition["exit-true"].id];
     return `
-\t\t\t\t#region ${condition.name} ${diagramType} /*exit-to-action*/
-\t\t\t\t\tif (
+\t\t\t\t\t#region ${condition.name} ${diagramType} /*exit-to-action*/
+\t\t\t\t\t\tif (
 ${condition.text
   .split("\n")
-  .map((line) => `\t\t\t\t\t\t${line}\n`)
-  .join("")} 
-\t\t\t\t\t) {
-\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+  .map((line) => `\n\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)} 
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
 
-\t\t\t\t\t\t#region ${conditionAction.name} ${diagramType}
+\t\t\t\t\t\t\t#region ${conditionAction.name} ${diagramType}
 ${conditionAction.value
   .split(";")
-  .map((line) => (line !== "" ? `\t\t\t\t\t\t\t${line};\n` : ""))
-  .join("")}  
-\t\t\t\t\t\t\tdebugPath += "${conditionAction.name} compleated > ";
-\t\t\t\t\t\t#endregion
-\t\t\t\t\t} else {
-\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
-\t\t\t\t\t}
-\t\t\t\t#endregion`;
+  .map((line) => (line !== "" ? `\n\t\t\t\t\t\t\t\t${line};` : ""))
+  .join("")
+  .substr(1)}  
+\t\t\t\t\t\t\t\tdebugPath += "${conditionAction.name} compleated > ";
+\t\t\t\t\t\t\t#endregion
+\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
+\t\t\t\t\t\t}
+\t\t\t\t\t#endregion`;
   }
 
   if (type === "exit-to-action-inverted") {
     let conditionAction = actions[condition["exit-true"].id];
     return `
-\t\t\t\t#region ${condition.name} ${diagramType} /*exit-to-action-inverted*/
-\t\t\t\t\tif (
-\t\t\t\t\t\t!(
+\t\t\t\t\t#region ${condition.name} ${diagramType} /*exit-to-action-inverted*/
+\t\t\t\t\t\tif (
+\t\t\t\t\t\t\t!(
 ${condition.text
   .split("\n")
-  .map((line) => `\t\t\t\t\t\t\t${line}\n`)
-  .join("")} 
-\t\t\t\t\t\t)
-\t\t\t\t\t) {
-\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
+  .map((line) => `\n\t\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)} 
+\t\t\t\t\t\t\t)
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
 
-\t\t\t\t\t\t#region ${conditionAction.name} ${diagramType}
+\t\t\t\t\t\t\t#region ${conditionAction.name} ${diagramType}
 ${conditionAction.value
   .split(";")
-  .map((line) => (line !== "" ? `\t\t\t\t\t\t\t${line};\n` : ""))
-  .join("")}  
-\t\t\t\t\t\t\tdebugPath += "${conditionAction.name} compleated > ";
-\t\t\t\t\t\t#endregion
-\t\t\t\t\t} else {
-\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
-\t\t\t\t\t}
-\t\t\t\t#endregion`;
+  .map((line) => (line !== "" ? `\n\t\t\t\t\t\t\t\t${line};` : ""))
+  .join("")
+  .substr(1)}  
+\t\t\t\t\t\t\t\tdebugPath += "${conditionAction.name} compleated > ";
+\t\t\t\t\t\t\t#endregion
+\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+\t\t\t\t\t\t}
+\t\t\t\t\t#endregion`;
   }
 
   if (type === "exit-to-last-action") {
     let action = actions[condition["exit-true"].id];
     return `
-\t\t\t\t#region ${condition.name} ${diagramType} /*exit-to-last-action*/
-\t\t\t\t\tif (
+\t\t\t\t\t#region ${condition.name} ${diagramType} /*exit-to-last-action*/
+\t\t\t\t\t\tif (
 ${condition.text
   .split("\n")
-  .map((line) => `\t\t\t\t\t\t${line}\n`)
-  .join("")} 
-\t\t\t\t\t) {
-\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+  .map((line) => `\n\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)} 
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
 
-\t\t\t\t\t\t#region ${action.name} ${diagramType}
+\t\t\t\t\t\t\t#region ${action.name} ${diagramType}
 ${action.value
   .split(";")
-  .map((line) => (line !== "" ? `\t\t\t\t\t\t\t${line};\n` : ""))
-  .join("")}  
-\t\t\t\t\t\t\tdebugPath += "${action.name} compleated > ";
-\t\t\t\t\t\t#endregion
+  .map((line) => (line !== "" ? `\n\t\t\t\t\t\t\t\t${line};` : ""))
+  .join("")
+  .substr(1)}  
+\t\t\t\t\t\t\t\tdebugPath += "${action.name} compleated > ";
+\t\t\t\t\t\t\t#endregion
 
-\t\t\t\t\t\treturn ${action["exit-none"].name};
-\t\t\t\t\t} else {
-\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
-\t\t\t\t\t}
-\t\t\t\t#endregion`;
+\t\t\t\t\t\t\treturn ${action["exit-none"].name};
+\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
+\t\t\t\t\t\t}
+\t\t\t\t\t#endregion`;
   }
 
   if (type === "exit-to-last-action-inverted") {
     let action = actions[condition["exit-false"].id];
     return `
-\t\t\t\t#region ${
+\t\t\t\t\t#region ${
       condition.name
     } ${diagramType} /*exit-to-last-action-inverted*/
-\t\t\t\t\tif (
-\t\t\t\t\t\t!(
+\t\t\t\t\t\tif (
+\t\t\t\t\t\t\t!(
 ${condition.text
   .split("\n")
-  .map((line) => `\t\t\t\t\t\t\t${line}\n`)
-  .join("")} 
-\t\t\t\t\t\t)
-\t\t\t\t\t) {
-\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
+  .map((line) => `\n\t\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)} 
+\t\t\t\t\t\t\t)
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
 
-\t\t\t\t\t\t#region ${action.name} ${diagramType}
+\t\t\t\t\t\t\t#region ${action.name} ${diagramType}
 ${action.value
   .split(";")
-  .map((line) => (line !== "" ? `\t\t\t\t\t\t\t${line};\n` : ""))
-  .join("")}  
-\t\t\t\t\t\t\tdebugPath += "${action.name} compleated > ";
-\t\t\t\t\t\t#endregion
+  .map((line) => (line !== "" ? `\n\t\t\t\t\t\t\t\t${line};` : ""))
+  .join("")
+  .substr(1)}  
+\t\t\t\t\t\t\t\tdebugPath += "${action.name} compleated > ";
+\t\t\t\t\t\t\t#endregion
 
-\t\t\t\t\t\treturn ${action["exit-none"].name};
-\t\t\t\t\t} else {
-\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
-\t\t\t\t\t}
-\t\t\t\t#endregion`;
+\t\t\t\t\t\t\treturn ${action["exit-none"].name};
+\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+\t\t\t\t\t\t}
+\t\t\t\t\t#endregion`;
   }
 
   if (type === "exit-to-last") {
     let conditionLast = conditions[condition["exit-true"].id];
-    //const conditionLastInverted = conditions[condition["exit-false"].id];
+
     conditionLast.ready = true;
     return `
-\t\t\t\t#region ${condition.name} ${diagramType} /*exit-to-last*/
-\t\t\t\t\tif (
+\t\t\t\t\t#region ${condition.name} ${diagramType} /*exit-to-last*/
+\t\t\t\t\t\tif (
 ${condition.text
   .split("\n")
-  .map((line) => `\t\t\t\t\t\t${line}\n`)
-  .join("")} 
-\t\t\t\t\t) {
-\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+  .map((line) => `\n\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)} 
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
 
-\t\t\t\t\t\t#region ${conditionLast.name} ${diagramType}
-\t\t\t\t\t\t\tif (
+\t\t\t\t\t\t\t#region ${conditionLast.name} ${diagramType}
+\t\t\t\t\t\t\t\tif (
 ${conditionLast.text
   .split("\n")
-  .map((line) => `\t\t\t\t\t\t\t\t${line}\n`)
-  .join("")}  
-\t\t\t\t\t\t\t) {
-\t\t\t\t\t\t\t\tdebugPath += "${conditionLast.name} T > ";
+  .map((line) => `\n\t\t\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)}  
+\t\t\t\t\t\t\t\t) {
+\t\t\t\t\t\t\t\t\tdebugPath += "${conditionLast.name} T > ";
 
-\t\t\t\t\t\t\t\treturn ${conditionLast["exit-true"].name};
-\t\t\t\t\t\t\t} else {
-\t\t\t\t\t\t\t\tdebugPath += "${conditionLast.name} F > ";
+\t\t\t\t\t\t\t\t\treturn ${conditionLast["exit-true"].name};
+\t\t\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\t\t\tdebugPath += "${conditionLast.name} F > ";
       
-\t\t\t\t\t\t\t\treturn ${conditionLast["exit-false"].name};
-\t\t\t\t\t\t\t}
-\t\t\t\t\t\t#endregion
-\t\t\t\t\t} else {
-\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
-\t\t\t\t\t}
-\t\t\t\t#endregion`;
+\t\t\t\t\t\t\t\t\treturn ${conditionLast["exit-false"].name};
+\t\t\t\t\t\t\t\t}
+\t\t\t\t\t\t\t#endregion
+\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
+\t\t\t\t\t\t}
+\t\t\t\t\t#endregion`;
   }
 };
 

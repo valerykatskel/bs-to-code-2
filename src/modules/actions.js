@@ -254,10 +254,10 @@ const transformCode = (code) => {
         });
 
         codeFormatted.value += `
-\t\t\tpublic bool ${diagramName} (${diagramArgs ? diagramArgs : ""}) {
-\t\t\t\tdebugPath = "";
+\t\t\t\tpublic bool ${diagramName} (${diagramArgs ? diagramArgs : ""}) {
+\t\t\t\t\tdebugPath = "";
 ${conditionsArray.map((el) => el.code).join("\n")}
-\t\t\t}
+\t\t\t\t}
       `;
       } else {
         // получим тип цикла
@@ -493,6 +493,16 @@ const createCondition = (code) => {
       // ошибочно отформатированное fin_d(1)23 преобразуем в find123
       /(fin_d\(1\)23(Short|Long)\(((\n|\t|\s){1,})(i|n)((\n|\t|\s){1,})\))/gm,
       "find123$2($5)"
+    )
+    .replace(
+      // ошибочно отформатированное сравнение с null приведем к нормальному виду
+      /\.ApproxCompare\(null\) (==|!=) 0/gm,
+      " $1 null"
+    )
+    .replace(
+      // ошибочно отформатированное сравнение int переменных (n,i) приведем к нормальному виду
+      /(n|i)\.ApproxCompare\((\d)\) (>|<|<=|>=|==|!=) 0/gm,
+      "$1 $3 $2"
     );
 
   //resultString = resultString
