@@ -432,7 +432,7 @@ const createCondition = (code) => {
     .replace(
       // все описания функций без подчеркивания и с n внутри скобок типа o(start_r) переведем в _o(istart_r)
       /((td_value|p_value|d_value|vh_value|vl_value|d_vh|d_vl|d_high|d_low|hbody|lbody|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}\((start_r|start_l|start_m|start_b|start_x)((\+|-)\d{1,}){0,}\))/gm,
-      "_$2(getBar(i$4))"
+      "_$2(getBar($4))"
     )
     .replace(
       // заменим все сравнения через корректное ApproxCompare
@@ -491,8 +491,8 @@ const createCondition = (code) => {
     )
     .replace(
       // ошибочно отформатированное fin_d(1)23 преобразуем в find123
-      /(fin_d\(1\)23(Short|Long)\(((\n|\t|\s){1,})(i|n)((\n|\t|\s){1,})\))/gm,
-      "find123$2($5)"
+      /(!){0,}(fin_d\(1\)23(Short|Long)\(((\n|\t|\s){1,})(i|n|size123|\d)((\n|\t|\s){1,})\))/gm,
+      "$1find123$3($6)"
     )
     .replace(
       // ошибочно отформатированное сравнение с null приведем к нормальному виду
