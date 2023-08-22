@@ -1,4 +1,10 @@
-import { getTabs, stripHtml, getConditionCode, getExits } from "./helpers";
+import {
+  getTabs,
+  stripHtml,
+  getConditionCode,
+  getExits,
+  fixBScode
+} from "./helpers";
 import { codeFormatted, appCode } from "./elements";
 //import { getPages } from "../controllers/mxfile.js";
 const copy = require("clipboard-copy");
@@ -10,7 +16,6 @@ const transformCode = (code) => {
   parseString(code, (err, result) => {
     //  подготовым данные по всем схемам
     //const tabs = getPages(result);
-    //debugger;
 
     result.mxfile.diagram.forEach((diagram) => {
       let conditions = {}; // коллекция всех ромбов-условий
@@ -61,7 +66,6 @@ const transformCode = (code) => {
           if (native["b-loop-condition"]) {
             loop.condition = stripHtml(native.label);
           }
-          debugger;
         } else {
           // парсим блоки-действия
           if (native["b-action"]) {
@@ -105,7 +109,6 @@ const transformCode = (code) => {
         }
       });
 
-      debugger;
       if (!loopMode) {
         // получаем все стрелки выхода из условий в отдельный массив и одновременно пушим стрелки в нужное условие
         exits = getExits(result, conditions, returns, actions);
@@ -206,8 +209,32 @@ const transformCode = (code) => {
             } else {
               // если и выход по НЕТ и выход по ДА выходим в другие блоки условий или действий
               // то проверим
-              debugger;
-              if (condition["exit-false"].type === "action") {
+              if (
+                condition["exit-false"].type === "action" &&
+                condition["exit-true"].type === "action"
+              ) {
+                // если из условия по НЕТ выходим в блок-действие
+                // и если из условия по ДА выходим в блок-действие
+                if (
+                  (actions[condition["exit-false"].id]["exit-none"].name ===
+                    "true" ||
+                    actions[condition["exit-false"].id]["exit-none"].name ===
+                      "false") &&
+                  (actions[condition["exit-true"].id]["exit-none"].name ===
+                    "true" ||
+                    actions[condition["exit-true"].id]["exit-none"].name ===
+                      "false")
+                ) {
+                  // если из обоих блоков-действий выход в да или нет,
+                  // то есть это последние блоки-действий в  цепочке
+                  debugger;
+                  conditionData.type = "exit-to-both-last-actions";
+                  condition.code = getConditionCode(conditionData);
+                } else {
+                  conditionData.type = "exit-to-action-inverted";
+                  condition.code = getConditionCode(conditionData);
+                }
+              } else if (condition["exit-false"].type === "action") {
                 // если из условия по НЕТ выходим в блок-действие
                 if (
                   actions[condition["exit-false"].id]["exit-none"].name ===
@@ -269,7 +296,6 @@ ${conditionsArray.map((el) => el.code).join("\n")}
         // дальше нужно определить тип цикла
         // usual - если условие на всех итерациях выполняется, возвращаем ДА, если на любой не выполнится, то вернем НЕТ
         // inverted - если условие на всех итерациях НЕ выполняется, возвращаем ДА, если на любой нвыполнится, то вернем ДА
-        debugger;
 
         codeFormatted.value += `
 \t\t\t\tpublic bool ${diagramName} (${diagramArgs ? diagramArgs : ""}) {
@@ -314,7 +340,7 @@ const createCondition = (code) => {
     )
     .replace(
       // преобразуем все +- тики
-      /(td_value|p_value|d_value|vh_value|vl_value|d_vh|d_vl|d_high|d_low|imb|hbody|lbody|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}((\[n\+){0,}\d{0,}(\]){0,})==(td_value|p_value|d_value|vh_value|vl_value|d_vh|d_vl|d_high|d_low|imb|hbody|lbody|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}((\[n\+){0,}\d{0,}(\]){0,})(\+-(\d{0,1}t))/gm,
+      /(td_value|p_value|d_value|vh_value|vh_r_value|vh_l_value|vh_t_value|vl_value|vl_r_value|vl_l_value|vl_t_value|d_vh|d_vl|d_high|d_low|imb|hbody_c|lbody_c|hbody|lbody|body_c|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|cd|h_c|l_c|o_c|c_c|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}((\[n\+){0,}\d{0,}(\]){0,})==(td_value|p_value|d_value|vh_value|vl_value|d_vh|d_vl|d_high|d_low|imb|hbody|lbody|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}((\[n\+){0,}\d{0,}(\]){0,})(\+-(\d{0,1}t))/gm,
       "$1$2$3<=$6$7$8+$12&&$1$2$3>=$6$7$8-$12"
     )
     .replace(
@@ -345,7 +371,7 @@ const createCondition = (code) => {
     )
     .replace(
       // обработаем отдельно стоящие модули, как содержащие выражения |vl1 - p1|, так и содержащие просто значения |td_value1|
-      /(\|)((td_value|p_value|d_value|vh_value|vh_r_value|vh_l_value|vh_t_value|vl_value|vl_r_value|vl_l_value|vl_t_value|d_vh|d_vl|d_high|d_low|imb|hbody|lbody|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(\d{0,})((\+|-)((td_value|p_value|d_value|vh_value|vh_r_value|vh_l_value|vh_t_value|vl_value|vl_r_value|vl_l_value|vl_t_value|d_vh|d_vl|d_high|d_low|imb|hbody|lbody|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(\d{0,}))){0,})(\|)/gm,
+      /(\|)((td_value|p_value|d_value|vh_value|vh_r_value|vh_l_value|vh_t_value|vl_value|vl_r_value|vl_l_value|vl_t_value|d_vh|d_vl|d_high|d_low|imb|hbody_c|lbody_c|hbody|lbody|body_c|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|cd|h_c|l_c|o_c|c_c|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(\d{0,})((\+|-)((td_value|p_value|d_value|vh_value|vh_r_value|vh_l_value|vh_t_value|vl_value|vl_r_value|vl_l_value|vl_t_value|d_vh|d_vl|d_high|d_low|imb|hbody_c|lbody_c|hbody|lbody|body_c|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|cd|h_c|l_c|o_c|c_c|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(\d{0,}))){0,})(\|)/gm,
       "Math.Abs($2)"
     );
   for (let i = 0; i < formattedValue.length; i++) {
@@ -386,124 +412,8 @@ const createCondition = (code) => {
     }
   }
   //resultString = formattedValue;
-
-  resultString = resultString
-    .replace(
-      // корректировка лишних табуляций и переносов строк в скобках функции Math.Abs()
-      /\.Abs\(\n\t{0,}(.*)\n\t{0,}\)/gm,
-      ".Abs($1)"
-    )
-    .replace(
-      // && перенесем на новую строку;
-      /(&&)/gm,
-      "\n$1\n"
-    )
-    .replace(
-      // || перенесем на новую строку;
-      /(\|\|)/gm,
-      "\n$1\n"
-    )
-    .replace(
-      // содержимое квадратных скобок перенесем в круглые
-      /(\[)([n|i]\+\d{1,}|start(_r|_l|_m|_b|_x|_t){0,1}|i|start|size123(\+\d){0,})(\])/gm,
-      "($2)"
-    )
-    .replace(
-      // исправим неправильную корректировку описание объема вместо v_value на v
-      /v_value/g,
-      "v"
-    )
-    .replace(
-      // обрамим лидирующую сумму или разницу в скобки, чтобы при дальше при при добавлении .ApproxCompare() корректно сравнивалось с выражением целым, а не с первой частью
-      /(((td_value|p_value|d_value|vh_value|vl_value|d_vh|d_vl|d_high|d_low|imb|hbody|lbody|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(_value){0,}(\d{1,}){0,})(\+|-)((\d{1,}\*TickSize|td_value|p_value|d_value|vh_value|vl_value|d_vh|d_vl|d_high|d_low|imb|hbody|lbody|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(_value){0,}(\d{0,}){0,}))(\.|<=|>=|!=|==|<|>){0,}/gm,
-      "Instrument.MasterInstrument.RoundToTickSize($1)$13"
-    )
-    .replace(
-      // все индексы типа l3 vh1 приведем к виду функций _l(3) и _vh(1)
-      /(td_value|p_value|d_value|vh_value|vl_value|d_vh|d_vl|d_high|d_low|hbody|lbody|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(\d|start|i|size123(\+\d){0,})/gm,
-      "_$1$2($3)"
-    )
-    .replace(
-      // все описания функций без подчеркивания и с n внутри скобок типа o(n+1) c(n+1) переведем в _o(n+1) и _c(n+1)
-      /((td_value|p_value|d_value|vh_value|vl_value|d_vh|d_vl|d_high|d_low|hbody|lbody|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}\((n|i)((\+|-)\d{1,}){0,}\))/gm,
-      "_$1"
-    )
-
-    .replace(
-      // все описания функций без подчеркивания и с n внутри скобок типа o(start_r) переведем в _o(istart_r)
-      /((td_value|p_value|d_value|vh_value|vl_value|d_vh|d_vl|d_high|d_low|hbody|lbody|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}\((start_r|start_l|start_m|start_b|start_x)((\+|-)\d{1,}){0,}\))/gm,
-      "_$2(getBar($4))"
-    )
-    .replace(
-      // заменим все сравнения через корректное ApproxCompare
-      /(.{1,})(>=|<=|==|!=|>|<)(.{1,})/gm,
-      "$1.ApproxCompare($3)$20"
-    )
-    .replace(
-      // заменим все разности на Instrument.MasterInstrument.RoundToTickSize
-      /(ApproxCompare)(\()((_(td_value|p_value|d_value|vh_value|vl_value|d_vh|d_vl|d_high|d_low|hbody|lbody|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(\())(n\+\d{1,}|\d|start|i|size123(\+\d){0,})(\))(\+|-)(.{0,}))(\))/gm,
-      "$1$2Instrument.MasterInstrument.RoundToTickSize($3)$10"
-    )
-    .replace(
-      // добавим правильное отображение типа уровня в условии
-      /(nl|ns)(\.type).ApproxCompare\((p_r|vl_r|vh_r|vh1|vl1|p2|d_r)\)==0/gm,
-      "$1$2 == handlarVXv2EnumLevelType.$3"
-    )
-    .replace(
-      // заменим значение тиков в скобке (3t) на (3*TickSize)
-      /\((\d){1,}t\)/gm,
-      "($1*TickSize)"
-    )
-    .replace(
-      // добавим слева и с права от плюса и минуса пробелы для улучшения читаемости условий
-      /(\+|-)/gm,
-      " $1 "
-    )
-    .replace(
-      // удалим все расставленные переносы строк, чтобы дальше корректно отформатировать отступы
-      /(\n)(&&|\|\|)(\n)/gm,
-      "$2"
-    )
-    .replace(
-      // добавим недостающий пробел в таких местах )|| и )&&, чтобы стало так ) || и ) &&
-      /(\))(&&|\|\|)/gm,
-      "$1 $2"
-    )
-    .replace(
-      // добавим недостающие пробелы форматирования в конце строк
-      /(>=|<=|!=|==|>|<)(\d){1,}(&&|\|\|){0,}$/gm,
-      " $1 $2 $3"
-    )
-    .replace(
-      // уберем лишние пробелы, табуляцию и пренос строк в вызовах фйнкций без параметров типа springCommonShort()
-      /\((\n|\t){1,}\)/gm,
-      "()"
-    )
-    .replace(
-      // уберем перевод строки сразу после открывающей скобки в вызове любой функции getBar(ns.start+1)
-      /(getBar)(\()((\n\s){1,})/gm,
-      "$1$2"
-    )
-    .replace(
-      // окончательно удалим все табы и переносы строк в скобках при вызове функций
-      /((getBar|find123Short)(\()(.){1,})((\n|\t|\s){1,})(\))/gm,
-      "$1$7"
-    )
-    .replace(
-      // ошибочно отформатированное fin_d(1)23 преобразуем в find123
-      /(!){0,}(fin_d\(1\)23(Short|Long)\(((\n|\t|\s){1,})(i|n|size123|\d)((\n|\t|\s){1,})\))/gm,
-      "$1find123$3($6)"
-    )
-    .replace(
-      // ошибочно отформатированное сравнение с null приведем к нормальному виду
-      /\.ApproxCompare\(null\) (==|!=) 0/gm,
-      " $1 null"
-    )
-    .replace(
-      // ошибочно отформатированное сравнение int переменных (n,i) приведем к нормальному виду
-      /(n|i)\.ApproxCompare\((\d)\) (>|<|<=|>=|==|!=) 0/gm,
-      "$1 $3 $2"
-    );
+  debugger;
+  resultString = fixBScode(resultString);
 
   //resultString = resultString
 

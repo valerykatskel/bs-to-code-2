@@ -8,6 +8,143 @@ const stripHtml = (html) => {
   return tmp.textContent || tmp.innerText || "";
 };
 
+const fixActionBlocksCode = (code) =>
+  code
+    .replace(
+      // все индексы типа l3 vh1 приведем к виду функций _l(3) и _vh(1)
+      /(td_value|p_value|d_value|vh_value|vh_r_value|vh_l_value|vh_t_value|vl_value|vl_r_value|vl_l_value|vl_t_value|d_vh|d_vl|d_high|d_low|imb|hbody_c|lbody_c|hbody|lbody|body_c|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|cd|h_c|l_c|o_c|c_c|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(\d|start|i|size123(\+\d){0,})/gm,
+      "_$1$2($3)"
+    )
+    .replace(
+      // оформим правильно суммы и вычитание тиков
+      /=\s{0,1}(_{0,}(td_value|p_value|d_value|vh_value|vh_r_value|vh_l_value|vh_t_value|vl_value|vl_r_value|vl_l_value|vl_t_value|d_vh|d_vl|d_high|d_low|imb|hbody_c|lbody_c|hbody|lbody|body_c|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|cd|h_c|l_c|o_c|c_c|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(\(){0,}(n\+\d{1,}|\d|start|i|size123(\+\d){0,}){0,1}(\)){0,}\s{0,}(\+|-)(.)+)/gm,
+      "= Instrument.MasterInstrument.RoundToTickSize($1)"
+    )
+    .replace(
+      // заменим значение тиков в скобке (3t) на (3*TickSize)
+      /(\d){1,}t/gm,
+      "$1*TickSize"
+    );
+
+const fixBScode = (bscode) =>
+  bscode
+    .replace(
+      // корректировка лишних табуляций и переносов строк в скобках функции Math.Abs()
+      /\.Abs\(\n\t{0,}(.*)\n\t{0,}\)/gm,
+      ".Abs($1)"
+    )
+    .replace(
+      // && перенесем на новую строку;
+      /(&&)/gm,
+      "\n$1\n"
+    )
+    .replace(
+      // || перенесем на новую строку;
+      /(\|\|)/gm,
+      "\n$1\n"
+    )
+    .replace(
+      // содержимое квадратных скобок перенесем в круглые
+      /(\[)([n|i]\+\d{1,}|start(_r|_l|_m|_b|_x|_t){0,1}|stop(_r|_l|_m|_b|_x|_t){0,1}|i|start|size123(\+\d){0,})(\])/gm,
+      "($2)"
+    )
+    .replace(
+      // исправим неправильную корректировку описание объема вместо v_value на v
+      /v_value/g,
+      "v"
+    )
+    .replace(
+      // обрамим лидирующую сумму или разницу в скобки, чтобы при дальше при при добавлении .ApproxCompare() корректно сравнивалось с выражением целым, а не с первой частью
+      /(((td_value|p_value|d_value|vh_value|vh_r_value|vh_l_value|vh_t_value|vl_value|vl_r_value|vl_l_value|vl_t_value|d_vh|d_vl|d_high|d_low|imb|hbody_c|lbody_c|hbody|lbody|body_c|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|cd|h_c|l_c|o_c|c_c|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(_value){0,}(\d{1,}){0,})(\+|-)((\d{1,}\*TickSize|td_value|p_value|d_value|vh_value|vl_value|d_vh|d_vl|d_high|d_low|imb|hbody|lbody|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|cd|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(_value){0,}(\d{0,}){0,}))(\.|<=|>=|!=|==|<|>){0,}/gm,
+      "Instrument.MasterInstrument.RoundToTickSize($1)$13"
+    )
+    .replace(
+      // все индексы типа l3 vh1 приведем к виду функций _l(3) и _vh(1)
+      /(td_value|p_value|d_value|vh_value|vh_r_value|vh_l_value|vh_t_value|vl_value|vl_r_value|vl_l_value|vl_t_value|d_vh|d_vl|d_high|d_low|imb|hbody_c|lbody_c|hbody|lbody|body_c|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|cd|h_c|l_c|o_c|c_c|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(\d|start|i|size123(\+\d){0,})/gm,
+      "_$1$2($3)"
+    )
+    .replace(
+      // все описания функций без подчеркивания и с n внутри скобок типа o(n+1) c(n+1) переведем в _o(n+1) и _c(n+1)
+      /((td_value|p_value|d_value|vh_value|vh_r_value|vh_l_value|vh_t_value|vl_value|vl_r_value|vl_l_value|vl_t_value|d_vh|d_vl|d_high|d_low|imb|hbody_c|lbody_c|hbody|lbody|body_c|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|cd|h_c|l_c|o_c|c_c|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}\((n|i)((\+|-)\d{1,}){0,}\))/gm,
+      "_$1"
+    )
+
+    .replace(
+      // все описания функций без подчеркивания и с n внутри скобок типа o(start_r) переведем в _o(istart_r)
+      /((td_value|p_value|d_value|vh_value|vh_r_value|vh_l_value|vh_t_value|vl_value|vl_r_value|vl_l_value|vl_t_value|d_vh|d_vl|d_high|d_low|imb|hbody_c|lbody_c|hbody|lbody|body_c|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|cd|h_c|l_c|o_c|c_c|d|v|o|c|h|l|p){0,}\((start_r|start_l|start_m|start_b|start_x|stop_r|stop_l|stop_m|stop_b|stop_x)((\+|-)\d{1,}){0,}\))/gm,
+      "_$2(getBar($4))"
+    )
+    .replace(
+      // заменим все сравнения через корректное ApproxCompare
+      /(.{1,})(>=|<=|==|!=|>|<)(.{1,})/gm,
+      "$1.ApproxCompare($3)$20"
+    )
+    .replace(
+      // заменим все разности на Instrument.MasterInstrument.RoundToTickSize
+      /(ApproxCompare)(\()((_(td_value|p_value|d_value|vh_value|vh_r_value|vh_l_value|vh_t_value|vl_value|vl_r_value|vl_l_value|vl_t_value|d_vh|d_vl|d_high|d_low|imb|hbody_c|lbody_c|hbody|lbody|body_c|body|dp_value|dvh_value|dvl_value|dvh|dvl|vh|vl|dp|amx_value|bmx_value|amx|bmx|cd|h_c|l_c|o_c|c_c|d|v|o|c|h|l|p)(_r|_l|_m|_b|_x|_t){0,}(\())(n\+\d{1,}|\d|start|i|size123(\+\d){0,})(\))(\+|-)(.{0,}))(\))/gm,
+      "$1$2Instrument.MasterInstrument.RoundToTickSize($3)$10"
+    )
+    .replace(
+      // добавим правильное отображение типа уровня в условии
+      /(nl|ns)(\.type).ApproxCompare\((p_r|vl_r|vh_r|vh1|vl1|p2|d_r)\)==0/gm,
+      "$1$2 == handlarVXv2EnumLevelType.$3"
+    )
+    .replace(
+      // заменим значение тиков в скобке (3t) на (3*TickSize)
+      /\((\d){1,}t\)/gm,
+      "($1*TickSize)"
+    )
+    .replace(
+      // добавим слева и с права от плюса и минуса пробелы для улучшения читаемости условий
+      /(\+|-)/gm,
+      " $1 "
+    )
+    .replace(
+      // удалим все расставленные переносы строк, чтобы дальше корректно отформатировать отступы
+      /(\n)(&&|\|\|)(\n)/gm,
+      "$2"
+    )
+    .replace(
+      // добавим недостающий пробел в таких местах )|| и )&&, чтобы стало так ) || и ) &&
+      /(\))(&&|\|\|)/gm,
+      "$1 $2"
+    )
+    .replace(
+      // добавим недостающие пробелы форматирования в конце строк
+      /(>=|<=|!=|==|>|<)(\d){1,}(&&|\|\|){0,}$/gm,
+      " $1 $2 $3"
+    )
+    .replace(
+      // уберем лишние пробелы, табуляцию и пренос строк в вызовах фйнкций без параметров типа springCommonShort()
+      /\((\n|\t){1,}\)/gm,
+      "()"
+    )
+    .replace(
+      // уберем перевод строки сразу после открывающей скобки в вызове любой функции getBar(ns.start+1)
+      /(getBar)(\()((\n\s){1,})/gm,
+      "$1$2"
+    )
+    .replace(
+      // окончательно удалим все табы и переносы строк в скобках при вызове функций
+      /((getBar|find123Short)(\()(.){1,})((\n|\t|\s){1,})(\))/gm,
+      "$1$7"
+    )
+    .replace(
+      // ошибочно отформатированное fin_d(1)23 преобразуем в find123
+      /(!){0,}(fin_d\(1\)23(Short|Long)\(((\n|\t|\s){1,})(i|n|size123|\d)((\n|\t|\s){1,})\))/gm,
+      "$1find123$3($6)"
+    )
+    .replace(
+      // ошибочно отформатированное сравнение с null приведем к нормальному виду
+      /\.ApproxCompare\(null\) (==|!=) 0/gm,
+      " $1 null"
+    )
+    .replace(
+      // ошибочно отформатированное сравнение int переменных (n,i) приведем к нормальному виду
+      /(n|i)\.ApproxCompare\((\d)\) (>|<|<=|>=|==|!=) 0/gm,
+      "$1 $3 $2"
+    );
+
 const getConditionCode = ({
   diagramType,
   type,
@@ -137,7 +274,9 @@ ${condition.text
 \t\t\t\t\t\t\t#region ${action.name} ${diagramType}
 ${action.value
   .split(";")
-  .map((line) => (line !== "" ? `\n\t\t\t\t\t\t\t\t${line};` : ""))
+  .map((line) =>
+    line !== "" ? `\n\t\t\t\t\t\t\t\t${fixActionBlocksCode(line)};` : ""
+  )
   .join("")
   .substr(1)}  
 \t\t\t\t\t\t\t\tdebugPath += "${action.name} compleated > ";
@@ -174,7 +313,9 @@ ${condition.text
 \t\t\t\t\t\t\t#region ${conditionAction.name} ${diagramType}
 ${conditionAction.value
   .split(";")
-  .map((line) => (line !== "" ? `\n\t\t\t\t\t\t\t\t${line};` : ""))
+  .map((line) =>
+    line !== "" ? `\n\t\t\t\t\t\t\t\t${fixActionBlocksCode(line)};` : ""
+  )
   .join("")
   .substr(1)}  
 \t\t\t\t\t\t\t\tdebugPath += "${conditionAction.name} compleated > ";
@@ -199,7 +340,9 @@ ${condition.text
 \t\t\t\t\t\t\t#region ${conditionAction.name} ${diagramType}
 ${conditionAction.value
   .split(";")
-  .map((line) => (line !== "" ? `\n\t\t\t\t\t\t\t\t${line};` : ""))
+  .map((line) =>
+    line !== "" ? `\n\t\t\t\t\t\t\t\t${fixActionBlocksCode(line)};` : ""
+  )
   .join("")
   .substr(1)}  
 \t\t\t\t\t\t\t\tdebugPath += "${conditionAction.name} compleated > ";
@@ -228,13 +371,60 @@ ${condition.text
 \t\t\t\t\t\t\t#region ${conditionAction.name} ${diagramType}
 ${conditionAction.value
   .split(";")
-  .map((line) => (line !== "" ? `\n\t\t\t\t\t\t\t\t${line};` : ""))
+  .map((line) =>
+    line !== "" ? `\n\t\t\t\t\t\t\t\t${fixActionBlocksCode(line)};` : ""
+  )
   .join("")
   .substr(1)}  
 \t\t\t\t\t\t\t\tdebugPath += "${conditionAction.name} compleated > ";
 \t\t\t\t\t\t\t#endregion
 \t\t\t\t\t\t} else {
 \t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+\t\t\t\t\t\t}
+\t\t\t\t\t#endregion`;
+  }
+
+  if (type === "exit-to-both-last-actions") {
+    let action1 = actions[condition["exit-true"].id];
+    let action2 = actions[condition["exit-false"].id];
+    return `
+\t\t\t\t\t#region ${condition.name} ${diagramType} /*exit-to-both-last-actions*/
+\t\t\t\t\t\tif (
+${condition.text
+  .split("\n")
+  .map((line) => `\n\t\t\t\t\t\t\t${line}`)
+  .join("")
+  .substr(1)} 
+\t\t\t\t\t\t) {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} T > ";
+
+\t\t\t\t\t\t\t#region ${action1.name} ${diagramType}
+${action1.value
+  .split(";")
+  .map((line) =>
+    line !== "" ? `\n\t\t\t\t\t\t\t\t${fixActionBlocksCode(line)};` : ""
+  )
+  .join("")
+  .substr(1)}  
+\t\t\t\t\t\t\t\tdebugPath += "${action1.name} compleated > ";
+\t\t\t\t\t\t\t#endregion
+
+\t\t\t\t\t\t\treturn ${action1["exit-none"].name};
+\t\t\t\t\t\t} else {
+\t\t\t\t\t\t\tdebugPath += "${condition.name} F > ";
+
+\t\t\t\t\t\t\t#region ${action2.name} ${diagramType}
+${action2.value
+  .split(";")
+  .map((line) =>
+    line !== "" ? `\n\t\t\t\t\t\t\t\t${fixActionBlocksCode(line)};` : ""
+  )
+  .join("")
+  .substr(1)}  
+\t\t\t\t\t\t\t\tdebugPath += "${action2.name} compleated > ";
+\t\t\t\t\t\t\t#endregion
+
+\t\t\t\t\t\t\treturn ${action2["exit-none"].name};
 \t\t\t\t\t\t}
 \t\t\t\t\t#endregion`;
   }
@@ -255,7 +445,9 @@ ${condition.text
 \t\t\t\t\t\t\t#region ${action.name} ${diagramType}
 ${action.value
   .split(";")
-  .map((line) => (line !== "" ? `\n\t\t\t\t\t\t\t\t${line};` : ""))
+  .map((line) =>
+    line !== "" ? `\n\t\t\t\t\t\t\t\t${fixActionBlocksCode(line)};` : ""
+  )
   .join("")
   .substr(1)}  
 \t\t\t\t\t\t\t\tdebugPath += "${action.name} compleated > ";
@@ -288,7 +480,9 @@ ${condition.text
 \t\t\t\t\t\t\t#region ${action.name} ${diagramType}
 ${action.value
   .split(";")
-  .map((line) => (line !== "" ? `\n\t\t\t\t\t\t\t\t${line};` : ""))
+  .map((line) =>
+    line !== "" ? `\n\t\t\t\t\t\t\t\t${fixActionBlocksCode(line)};` : ""
+  )
   .join("")
   .substr(1)}  
 \t\t\t\t\t\t\t\tdebugPath += "${action.name} compleated > ";
@@ -412,4 +606,4 @@ const getExits = (result, conditions, returns, actions) =>
     })
     .filter((el) => el.type !== "");
 
-export { getTabs, getAbs, stripHtml, getConditionCode, getExits };
+export { getTabs, getAbs, stripHtml, getConditionCode, getExits, fixBScode };
